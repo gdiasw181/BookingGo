@@ -1,0 +1,12 @@
+﻿function App() {
+  return (
+    <main>
+      <h1>BookingGo</h1>
+      <h2>Online Booking System</h2>
+      <p>Book and manage your appointments easily.</p>
+      <button>Get Started</button>
+    </main>
+  )
+}
+
+export default App
