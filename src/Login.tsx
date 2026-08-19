@@ -1,5 +1,5 @@
 ﻿
-function login() {
+function Login() {
     return (
         <form style={{ maxWidth: 360 }}>
             <h1>Sign in</h1>
