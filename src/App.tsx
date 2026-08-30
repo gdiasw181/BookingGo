@@ -1,7 +1,18 @@
 import { useState } from 'react'
+import Login from './Login'
 
 function App() {
   const [page, setPage] = useState('home')
+  const [user, setUser] = useState<{ email?: string } | null>(null)
+
+  function handleLogin(u: { email: string }) {
+    setUser(u)
+    setPage('booking')
+  }
+
+  function handleCancel() {
+    setPage('home')
+  }
 
   return (
     <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'Arial' }}>
@@ -26,23 +37,7 @@ function App() {
       )}
 
       {page === 'login' && (
-        <>
-          <h1>Sign in</h1>
-
-          <p>
-            <label>Email</label><br />
-            <input type="email" placeholder="student@email.com" />
-          </p>
-
-          <p>
-            <label>Password</label><br />
-            <input type="password" placeholder="Password" />
-          </p>
-
-          <button onClick={() => setPage('booking')}>
-            Sign in
-          </button>
-        </>
+        <Login onLogin={handleLogin} onCancel={handleCancel} />
       )}
 
       {page === 'booking' && (
