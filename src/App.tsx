@@ -1,4 +1,5 @@
-import Login from './Login'
+import Login from './pages/Login'
+import StaffProfiles from './pages/StaffProfiles'
 import { useState } from 'react'
 function App() {
   const [page, setPage] = useState('home')
