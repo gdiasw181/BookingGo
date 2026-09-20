@@ -64,66 +64,7 @@ function StaffProfiles() {
   })
 
   return (
-    <div
-      style={{
-        backgroundColor: '#f5f3ee',
-        minHeight: '100vh',
-        paddingBottom: 60,
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          backgroundColor: '#111111',
-          color: 'white',
-          padding: '24px 40px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: '0 auto',
-          }}
-        >
-          <h1
-            style={{
-              margin: 0,
-              fontSize: 34,
-              fontWeight: 800,
-            }}
-          >
-            BookingGo
-          </h1>
-
-          <p
-            style={{
-              marginTop: 6,
-              marginBottom: 0,
-              color: '#dddddd',
-            }}
-          >
-            Academic Meeting Booking System
-          </p>
-        </div>
-      </div>
-
-      {/* Orange bar */}
-      <div
-        style={{
-          height: 8,
-          backgroundColor: '#f58220',
-        }}
-      />
-
-      {/* Main content */}
-      <main
-        style={{
-          maxWidth: 1100,
-          margin: '0 auto',
-          padding: '45px 30px',
-          fontFamily: 'Arial, sans-serif',
-        }}
-      >
+    <main style={{ maxWidth: 1100, margin: '0 auto', padding: '45px 30px', fontFamily: 'Arial, sans-serif' }}>
         <div
           style={{
             marginBottom: 35,
@@ -394,7 +335,6 @@ function StaffProfiles() {
           </div>
         )}
       </main>
-    </div>
   )
 }
 
