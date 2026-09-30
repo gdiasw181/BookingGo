@@ -153,14 +153,15 @@ function StaffProfiles() {
                 padding: '13px 14px',
                 border: '1px solid #bbbbbb',
                 fontSize: 15,
+                color: '#111111',
                 backgroundColor: 'white',
               }}
             >
-              <option value="All">All roles</option>
-              <option value="Lecturer">Lecturer</option>
-              <option value="Tutor">Tutor</option>
-              <option value="TA">TA</option>
-              <option value="Academic Mentor">Academic Mentor</option>
+              <option value="All" style={{ color: '#111111' }}>All roles</option>
+              <option value="Lecturer" style={{ color: '#111111' }}>Lecturer</option>
+              <option value="Tutor" style={{ color: '#111111' }}>Tutor</option>
+              <option value="TA" style={{ color: '#111111' }}>TA</option>
+              <option value="Academic Mentor" style={{ color: '#111111' }}>Academic Mentor</option>
             </select>
 
             <select
@@ -171,20 +172,21 @@ function StaffProfiles() {
                 padding: '13px 14px',
                 border: '1px solid #bbbbbb',
                 fontSize: 15,
+                color: '#111111',
                 backgroundColor: 'white',
               }}
             >
-              <option value="All">All departments</option>
-              <option value="Software Development">
+              <option value="All" style={{ color: '#111111' }}>All departments</option>
+              <option value="Software Development" style={{ color: '#111111' }}>
                 Software Development
               </option>
-              <option value="Computer Science">
+              <option value="Computer Science" style={{ color: '#111111' }}>
                 Computer Science
               </option>
-              <option value="Programming">
+              <option value="Programming" style={{ color: '#111111' }}>
                 Programming
               </option>
-              <option value="Information Technology">
+              <option value="Information Technology" style={{ color: '#111111' }}>
                 Information Technology
               </option>
             </select>

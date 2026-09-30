@@ -1,5 +1,6 @@
-import Login from './pages/Login'
 import StaffProfiles from './pages/StaffProfiles'
+import SignUp from './components/SignUp'
+import SignIn from './components/SignIn'
 import { useState } from 'react'
 function App() {
   const [page, setPage] = useState('home')
@@ -81,7 +82,10 @@ function App() {
       )}
 
       {page === 'login' && (
-        <Login onLogin={handleLogin} onCancel={handleCancel} />
+        <div style={{ display: 'flex', gap: 24, maxWidth: 900, margin: '0 auto', padding: '30px 0' }}>
+          <SignIn />
+          <SignUp />
+        </div>
       )}
 
       {page === 'staff' && (
@@ -95,13 +99,13 @@ function App() {
 
             <div style={{ marginTop: 12 }}>
               <label style={{ display: 'block', marginBottom: 6 }}>Academic Staff</label>
-              <select style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15 }}>
-                <option>Select academic staff</option>
-                <option>Dr Alex Smith</option>
-                <option>Maya Chen</option>
-                <option>Jordan Lee</option>
-                <option>Sam Patel</option>
-              </select>
+            <select style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15, color: 'black' }}>
+              <option style={{ color: 'black' }}>Select academic staff</option>
+              <option style={{ color: 'black' }}>Dr Alex Smith</option>
+              <option style={{ color: 'black' }}>Maya Chen</option>
+              <option style={{ color: 'black' }}>Jordan Lee</option>
+              <option style={{ color: 'black' }}>Sam Patel</option>
+            </select>
             </div>
 
             <div style={{ marginTop: 12 }}>
@@ -111,12 +115,12 @@ function App() {
 
             <div style={{ marginTop: 12 }}>
               <label style={{ display: 'block', marginBottom: 6 }}>Time</label>
-              <select style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15 }}>
-                <option>Select a time</option>
-                <option>10:00 AM</option>
-                <option>11:00 AM</option>
-                <option>2:00 PM</option>
-              </select>
+            <select style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15, color: 'black' }}>
+              <option style={{ color: 'black' }}>Select a time</option>
+              <option style={{ color: 'black' }}>10:00 AM</option>
+              <option style={{ color: 'black' }}>11:00 AM</option>
+              <option style={{ color: 'black' }}>2:00 PM</option>
+            </select>
             </div>
 
             <div style={{ marginTop: 18 }}>
@@ -162,7 +166,7 @@ function App() {
             <p>2 September 2026 — 10:00 AM</p>
 
             <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <button style={{ padding: '10px 14px', backgroundColor: '#f58220', color: 'white', border: 'none' }}>Edit</button>
+              <button style={{ padding: '10px 14px', backgroundColor: '#f58220', color: '#111111', border: 'none' }}>Edit</button>
               <button style={{ padding: '10px 14px', border: '1px solid #bbbbbb', background: 'white' }}>Cancel</button>
             </div>
           </div>
