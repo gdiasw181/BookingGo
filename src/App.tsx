@@ -83,7 +83,7 @@ function App() {
 
       {page === 'login' && (
         <div style={{ display: 'flex', gap: 24, maxWidth: 900, margin: '0 auto', padding: '30px 0' }}>
-          <SignIn />
+          <SignIn onSuccess={() => setPage('staff')} />
           <SignUp />
         </div>
       )}

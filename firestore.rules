@@ -3,7 +3,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
 	// Users can read/write their own profile only
 	match /users/{userId} {
-	  allow read, write: if request.auth != null && request.auth.uid == userId;
+	  // Allow the authenticated user to read/write their own profile only if their
+	  // email belongs to the allowed domain (autuni.ac.nz). This prevents creating
+	  // user profile documents for accounts with other email domains.
+	  allow read, write: if request.auth != null
+		&& request.auth.uid == userId
+		&& request.auth.token.email != null
+		&& request.auth.token.email.matches('.*@autuni\\.ac\\.nz$');
 	}
 
 	// Add additional rules for your app data here

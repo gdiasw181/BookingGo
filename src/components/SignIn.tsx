@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { signIn, signOut } from "../services/auth";
 
-const SignIn: React.FC = () => {
+type Props = {
+  onSuccess?: () => void;
+  onLogin?: (user: { email?: string } | null) => void;
+};
+
+const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,10 +19,16 @@ const SignIn: React.FC = () => {
     try {
       const res = await signIn(email, password);
       console.log("Signed in", res);
+      // Stop loading before navigating or notifying parent to avoid updating
+      // state on an unmounted component if the parent unmounts this form.
+      setLoading(false);
+      // Notify parent and navigate if requested
+      onLogin?.({ email: res.user?.email });
+      onSuccess?.();
       alert("Signed in");
+      return;
     } catch (err: any) {
       setError(err.message || "Failed to sign in");
-    } finally {
       setLoading(false);
     }
   };
