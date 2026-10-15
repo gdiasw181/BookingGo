@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import App from '../App'
@@ -8,8 +8,10 @@ import StaffProfiles from '../pages/StaffProfiles'
 describe('BookingGo basic UI tests', () => {
   it('renders home page content by default', () => {
 	render(<App />)
-	expect(screen.getByText('BookingGo')).toBeInTheDocument()
-	expect(screen.getByText('Academic Meeting Booking System')).toBeInTheDocument()
+	expect(screen.getAllByText('BookingGo').length).toBeGreaterThan(0)
+	expect(
+  	screen.getAllByText('Academic Meeting Booking System').length
+		).toBeGreaterThan(0)
   })
 
   it('navigates to Login when Login button clicked', () => {
@@ -20,8 +22,12 @@ describe('BookingGo basic UI tests', () => {
 
   it('navigates to StaffProfiles when Academic Staff clicked', () => {
 	render(<App />)
-	fireEvent.click(screen.getByRole('button', { name: /Academic Staff/i }))
-	expect(screen.getByText('Academic Staff')).toBeInTheDocument()
+	fireEvent.click(
+  screen.getByRole('button', { name: /^Academic Staff$/i })
+)
+expect(
+  screen.getByRole('heading', { name: 'Academic Staff' })
+).toBeInTheDocument()
 	expect(screen.getByText('Find support')).toBeInTheDocument()
   })
 
@@ -65,7 +71,9 @@ describe('BookingGo basic UI tests', () => {
 	render(<StaffProfiles />)
 	// initial: staff list shows several names
 	expect(screen.getByText('Dr Alex Smith')).toBeInTheDocument()
-	const input = screen.getByPlaceholderText('Search by name or department')
+	const input = screen.getByRole('textbox', {
+  name: 'Search academic staff',
+})
 	fireEvent.change(input, { target: { value: 'Maya' } })
 	expect(screen.queryByText('Dr Alex Smith')).not.toBeInTheDocument()
 	expect(screen.getByText('Maya Chen')).toBeInTheDocument()

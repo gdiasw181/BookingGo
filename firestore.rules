@@ -1,17 +1,186 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-	// Users can read/write their own profile only
-	match /users/{userId} {
-	  // Allow the authenticated user to read/write their own profile only if their
-	  // email belongs to the allowed domain (autuni.ac.nz). This prevents creating
-	  // user profile documents for accounts with other email domains.
-	  allow read, write: if request.auth != null
-		&& request.auth.uid == userId
-		&& request.auth.token.email != null
-		&& request.auth.token.email.matches('.*@autuni\\.ac\\.nz$');
-	}
 
-	// Add additional rules for your app data here
+    // Check AUT authentication
+    function isAutUser() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.matches('.*@autuni\\.ac\\.nz$');
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read, write: if isAutUser()
+        && request.auth.uid == userId;
+    }
+
+    // Validate a new booking
+    function validNewBooking(b) {
+      return b.keys().hasOnly([
+          'studentId',
+          'staffId',
+          'staffName',
+          'date',
+          'time',
+          'reason',
+          'status',
+          'createdAt'
+        ])
+        && b.keys().hasAll([
+          'studentId',
+          'staffId',
+          'staffName',
+          'date',
+          'time',
+          'status',
+          'createdAt'
+        ])
+        && b.studentId == request.auth.uid
+        && b.staffId is string
+        && b.staffId.matches('^[A-Za-z0-9_-]{1,80}$')
+        && b.staffName is string
+        && b.staffName.size() > 0
+        && b.staffName.size() <= 120
+        && b.date is string
+        && b.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && b.time is string
+        && b.time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+        && b.get('reason', '') is string
+        && b.get('reason', '').size() <= 500
+        && b.status == 'pending'
+        && b.createdAt == request.time;
+    }
+
+    // Verify the slot created with a booking
+    function matchingSlot(bookingId, b) {
+      let slotId = b.staffId + '_' + b.date + '_' + b.time;
+      let slot = getAfter(
+        /databases/$(database)/documents/bookingSlots/$(slotId)
+      ).data;
+
+      return slot.bookingId == bookingId
+        && slot.staffId == b.staffId
+        && slot.date == b.date
+        && slot.time == b.time;
+    }
+
+    // Verify the booking created with a slot
+    function matchingBooking(bookingId, slot) {
+      let booking = getAfter(
+        /databases/$(database)/documents/bookings/$(bookingId)
+      ).data;
+
+      return booking.studentId == request.auth.uid
+        && booking.staffId == slot.staffId
+        && booking.date == slot.date
+        && booking.time == slot.time
+        && booking.status == 'pending';
+    }
+
+    // Student cancellation:
+    // Update booking status and delete its slot together
+    function canCancelBooking(bookingId) {
+      let booking = resource.data;
+      let slotId =
+        booking.staffId + '_' + booking.date + '_' + booking.time;
+      let slotPath =
+        /databases/$(database)/documents/bookingSlots/$(slotId);
+
+      return isAutUser()
+        && booking.studentId == request.auth.uid
+        && booking.status == 'pending'
+        && request.resource.data.status == 'cancelled'
+        && request.resource.data.diff(booking)
+          .affectedKeys().hasOnly(['status'])
+        && exists(slotPath)
+        && get(slotPath).data.bookingId == bookingId
+        && !existsAfter(slotPath);
+    }
+
+    // The slot can only be deleted with a valid cancellation
+    function canReleaseSlot(slotId) {
+      let slot = resource.data;
+      let bookingPath =
+        /databases/$(database)/documents/bookings/$(slot.bookingId);
+
+      return isAutUser()
+        && slotId == (
+          slot.staffId + '_' + slot.date + '_' + slot.time
+        )
+        && exists(bookingPath)
+        && get(bookingPath).data.studentId == request.auth.uid
+        && get(bookingPath).data.status == 'pending'
+        && get(bookingPath).data.staffId == slot.staffId
+        && get(bookingPath).data.date == slot.date
+        && get(bookingPath).data.time == slot.time
+        && getAfter(bookingPath).data.status == 'cancelled'
+        && getAfter(bookingPath).data
+          .diff(get(bookingPath).data)
+          .affectedKeys().hasOnly(['status']);
+    }
+
+    // Booking records
+    match /bookings/{bookingId} {
+
+      // Students may only read their own bookings
+      allow get, list: if isAutUser()
+        && resource.data.studentId == request.auth.uid;
+
+      // A new booking must have a matching time slot
+      allow create: if isAutUser()
+        && validNewBooking(request.resource.data)
+        && matchingSlot(bookingId, request.resource.data);
+
+      // Only valid cancellation updates are permitted
+      allow update: if canCancelBooking(bookingId);
+
+      // Keep booking history
+      allow delete: if false;
+    }
+
+    // Reserved appointment time slots
+    match /bookingSlots/{slotId} {
+
+      // Authenticated AUT users can check one slot
+      allow get: if isAutUser();
+      allow list: if false;
+
+      // Slot creation must match its booking
+      allow create: if isAutUser()
+        && request.resource.data.keys().hasOnly([
+          'bookingId',
+          'staffId',
+          'date',
+          'time'
+        ])
+        && request.resource.data.keys().hasAll([
+          'bookingId',
+          'staffId',
+          'date',
+          'time'
+        ])
+        && request.resource.data.bookingId is string
+        && request.resource.data.staffId is string
+        && request.resource.data.date is string
+        && request.resource.data.time is string
+        && slotId == (
+          request.resource.data.staffId + '_' +
+          request.resource.data.date + '_' +
+          request.resource.data.time
+        )
+        && matchingBooking(
+          request.resource.data.bookingId,
+          request.resource.data
+        );
+
+      // Reserved slots cannot be edited directly
+      allow update: if false;
+
+      // Release a slot only when its booking is cancelled
+      allow delete: if canReleaseSlot(slotId);
+    }
   }
 }
