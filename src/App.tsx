@@ -1,18 +1,26 @@
+
+import { useState } from 'react'
 import StaffProfiles from './pages/StaffProfiles'
 import SignUp from './components/SignUp'
 import SignIn from './components/SignIn'
-import { useState } from 'react'
+import Booking from './pages/Booking'
+import MyBookings from './pages/MyBookings'
+
+type Page =
+  | 'home'
+  | 'login'
+  | 'staff'
+  | 'booking'
+  | 'confirmation'
+  | 'mybookings'
+
 function App() {
-  const [page, setPage] = useState('home')
-  const [user, setUser] = useState<{ email?: string } | null>(null)
+  const [page, setPage] = useState<Page>('home')
+  const [lastBookingId, setLastBookingId] = useState<string | null>(null)
 
-  function handleLogin(u: { email: string }) {
-    setUser(u)
-    setPage('booking')
-  }
-
-  function handleCancel() {
-    setPage('home')
+  function handleBookingSuccess(bookingId: string) {
+    setLastBookingId(bookingId)
+    setPage('confirmation')
   }
 
   return (
@@ -25,162 +33,234 @@ function App() {
         paddingBottom: 60,
       }}
     >
-      <div style={{ backgroundColor: '#111111', color: 'white', padding: '24px 40px' }}>
+      {/* Header */}
+      <header
+        style={{
+          backgroundColor: '#111111',
+          color: 'white',
+          padding: '24px 40px',
+        }}
+      >
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800 }}>BookingGo</h1>
-          <p style={{ marginTop: 6, marginBottom: 0, color: '#dddddd' }}>Academic Meeting Booking System</p>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 34,
+              fontWeight: 800,
+            }}
+          >
+            BookingGo
+          </h1>
+
+          <p
+            style={{
+              marginTop: 6,
+              marginBottom: 0,
+              color: '#dddddd',
+            }}
+          >
+            Academic Meeting Booking System
+          </p>
         </div>
-      </div>
+      </header>
 
-      <div style={{ height: 8, backgroundColor: '#f58220' }} />
+      <div
+        style={{
+          height: 8,
+          backgroundColor: '#f58220',
+        }}
+      />
 
+      {/* Navigation */}
       <nav
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: 10,
           padding: '20px 40px',
           maxWidth: 1200,
           margin: '0 auto',
         }}
       >
-        <button onClick={() => setPage('home')}>Home</button>
+        <button onClick={() => setPage('home')}>
+          Home
+        </button>
 
-        <button onClick={() => setPage('login')}>Login</button>
+        <button onClick={() => setPage('login')}>
+          Login
+        </button>
 
         <button onClick={() => setPage('staff')}>
           Academic Staff
         </button>
 
-        <button onClick={() => setPage('booking')}>Book</button>
+        <button onClick={() => setPage('booking')}>
+          Book
+        </button>
 
         <button onClick={() => setPage('mybookings')}>
           My Bookings
         </button>
       </nav>
 
+      {/* Home Page */}
       {page === 'home' && (
-        <div
+        <section
           style={{
             maxWidth: 1100,
             margin: '0 auto',
             padding: '50px 30px',
           }}
         >
-          <h1 style={{ color: '#111111', fontSize: 40, marginBottom: 6 }}>BookingGo</h1>
+          <h1
+            style={{
+              color: '#111111',
+              fontSize: 40,
+              marginBottom: 6,
+            }}
+          >
+            BookingGo
+          </h1>
 
-          <h2 style={{ color: '#555555', marginTop: 0 }}>Academic Meeting Booking System</h2>
+          <h2
+            style={{
+              color: '#555555',
+              marginTop: 0,
+            }}
+          >
+            Academic Meeting Booking System
+          </h2>
 
-          <p style={{ color: '#555555', maxWidth: 900, lineHeight: 1.6, margin: '0 auto' }}>
-            Book and manage academic meetings with lecturers, tutors,
-            TAs, and academic mentors.
+          <p
+            style={{
+              color: '#555555',
+              maxWidth: 900,
+              lineHeight: 1.6,
+              margin: '0 auto',
+            }}
+          >
+            Book and manage academic meetings with lecturers,
+            tutors, TAs, and academic mentors.
           </p>
 
-          <button onClick={() => setPage('staff')} style={{ marginTop: 18, backgroundColor: '#f58220', color: 'white', padding: '10px 14px', border: 'none' }}>
+          <button
+            onClick={() => setPage('staff')}
+            style={{
+              marginTop: 18,
+              backgroundColor: '#f58220',
+              color: 'white',
+              padding: '10px 14px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
             Find Academic Staff
           </button>
-        </div>
+        </section>
       )}
 
+      {/* Login and Sign Up */}
       {page === 'login' && (
-        <div style={{ display: 'flex', gap: 24, maxWidth: 900, margin: '0 auto', padding: '30px 0' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 24,
+            maxWidth: 900,
+            margin: '0 auto',
+            padding: '30px 20px',
+          }}
+        >
           <SignIn onSuccess={() => setPage('staff')} />
           <SignUp />
         </div>
       )}
 
+      {/* Academic Staff */}
       {page === 'staff' && (
         <StaffProfiles />
       )}
 
+      {/* Real Booking Form */}
       {page === 'booking' && (
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '50px 30px' }}>
-          <div style={{ backgroundColor: 'white', padding: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
-            <h1 style={{ color: '#111111' }}>Book a Meeting</h1>
-
-            <div style={{ marginTop: 12 }}>
-              <label style={{ display: 'block', marginBottom: 6 }}>Academic Staff</label>
-            <select style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15, color: 'black' }}>
-              <option style={{ color: 'black' }}>Select academic staff</option>
-              <option style={{ color: 'black' }}>Dr Alex Smith</option>
-              <option style={{ color: 'black' }}>Maya Chen</option>
-              <option style={{ color: 'black' }}>Jordan Lee</option>
-              <option style={{ color: 'black' }}>Sam Patel</option>
-            </select>
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <label style={{ display: 'block', marginBottom: 6 }}>Date</label>
-              <input type="date" style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15 }} />
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <label style={{ display: 'block', marginBottom: 6 }}>Time</label>
-            <select style={{ width: '100%', padding: '13px 14px', border: '1px solid #bbbbbb', fontSize: 15, color: 'black' }}>
-              <option style={{ color: 'black' }}>Select a time</option>
-              <option style={{ color: 'black' }}>10:00 AM</option>
-              <option style={{ color: 'black' }}>11:00 AM</option>
-              <option style={{ color: 'black' }}>2:00 PM</option>
-            </select>
-            </div>
-
-            <div style={{ marginTop: 18 }}>
-              <button onClick={() => setPage('confirmation')} style={{ backgroundColor: '#f58220', color: 'white', padding: '10px 14px', border: 'none' }}>
-                Request Meeting
-              </button>
-            </div>
-          </div>
-        </div>
+        <Booking onBooked={handleBookingSuccess} />
       )}
 
+      {/* Booking Confirmation */}
       {page === 'confirmation' && (
-        <div
+        <section
           style={{
-            maxWidth: 1100,
+            maxWidth: 850,
             margin: '0 auto',
             padding: '50px 30px',
           }}
         >
-          <h1>Meeting Request Submitted</h1>
+          <div
+            style={{
+              backgroundColor: 'white',
+              padding: 30,
+              borderTop: '5px solid #f58220',
+              borderRadius: 8,
+            }}
+          >
+            <h1 style={{ color: '#111111' }}>
+              Meeting Request Submitted
+            </h1>
 
-          <p>
-            Your meeting request has been submitted successfully.
-          </p>
+            <p>
+              Your meeting request has been saved successfully.
+            </p>
 
-          <button onClick={() => setPage('mybookings')}>
-            View My Bookings
-          </button>
-        </div>
-      )}
+            <p>
+              The booking is currently pending.
+            </p>
 
-      {page === 'mybookings' && (
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '50px 30px' }}>
-          <h1 style={{ color: '#111111' }}>My Bookings</h1>
+            {lastBookingId && (
+              <p style={{ color: '#555555' }}>
+                <strong>Booking ID:</strong> {lastBookingId}
+              </p>
+            )}
 
-          <div style={{ backgroundColor: 'white', padding: 20, marginBottom: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
-            <h3 style={{ marginTop: 0 }}>Pending Meeting</h3>
+            <div
+              style={{
+                display: 'flex',
+                gap: 12,
+                flexWrap: 'wrap',
+                marginTop: 24,
+              }}
+            >
+              <button
+                onClick={() => setPage('mybookings')}
+                style={{
+                  backgroundColor: '#f58220',
+                  color: '#111111',
+                  padding: '12px 18px',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                View My Bookings
+              </button>
 
-            <p>Dr Alex Smith</p>
-
-            <p>Software Development</p>
-
-            <p>2 September 2026 — 10:00 AM</p>
-
-            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <button style={{ padding: '10px 14px', backgroundColor: '#f58220', color: '#111111', border: 'none' }}>Edit</button>
-              <button style={{ padding: '10px 14px', border: '1px solid #bbbbbb', background: 'white' }}>Cancel</button>
+              <button
+                onClick={() => setPage('booking')}
+                style={{
+                  padding: '12px 18px',
+                  border: '1px solid #bbbbbb',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Book Another Meeting
+              </button>
             </div>
           </div>
+        </section>
+      )}
 
-          <div style={{ backgroundColor: 'white', padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
-            <h3 style={{ marginTop: 0 }}>Upcoming Meeting</h3>
-
-            <p>Maya Chen</p>
-
-            <p>Computer Science</p>
-
-            <p>5 September 2026 — 2:00 PM</p>
-          </div>
-        </div>
+      {/* Real Booking History */}
+      {page === 'mybookings' && (
+        <MyBookings />
       )}
     </main>
   )
