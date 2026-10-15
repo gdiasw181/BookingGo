@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { signIn, signOut } from "../services/auth";
 
@@ -16,15 +17,18 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
       const res = await signIn(email, password);
       console.log("Signed in", res);
-      // Stop loading before navigating or notifying parent to avoid updating
-      // state on an unmounted component if the parent unmounts this form.
+
       setLoading(false);
-      // Notify parent and navigate if requested
-      onLogin?.({ email: res.user?.email });
+
+      // Firebase email can be null.
+      // Convert null to undefined to match the callback type.
+      onLogin?.({ email: res.user?.email ?? undefined });
       onSuccess?.();
+
       alert("Signed in");
       return;
     } catch (err: any) {
@@ -41,20 +45,41 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
   return (
     <div style={{ maxWidth: 400 }}>
       <h3>Sign In</h3>
-      {error && <div style={{ color: "red" }}>{error}</div>}
+
+      {error && (
+        <div style={{ color: "red" }}>
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
+
         <div>
           <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
-        <button type="submit" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button>
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Signing in..." : "Sign in"}
+        </button>
       </form>
+
       <hr />
-      <button onClick={handleSignOut}>Sign out</button>
+
+      <button onClick={handleSignOut}>
+        Sign out
+      </button>
     </div>
   );
 };
