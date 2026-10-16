@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { signIn, signOut } from "../services/auth";
 
@@ -19,17 +20,21 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
       const res = await signIn(email, password, role);
       console.log("Signed in", res);
-      // Stop loading before navigating or notifying parent to avoid updating
-      // state on an unmounted component if the parent unmounts this form.
+
       setLoading(false);
       // persist chosen role locally for later features
       try { localStorage.setItem('role', role); } catch {}
       // Notify parent and navigate if requested, include role
-      onLogin?.({ email: res.user?.email, role });
+      onLogin?.({
+      email: res.user?.email ?? undefined,
+      role,
+      });
       onSuccess?.();
+
       alert("Signed in");
       return;
     } catch (err: any) {
@@ -46,15 +51,29 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
   return (
     <div style={{ maxWidth: 400 }}>
       <h3>Sign In</h3>
-      {error && <div style={{ color: "red" }}>{error}</div>}
+
+      {error && (
+        <div style={{ color: "red" }}>
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
+
         <div>
           <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
       <div style={{ marginTop: 8 }}>
         <label style={{ display: 'block', marginBottom: 6 }}>Account type</label>
@@ -67,8 +86,12 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
       </div>
         <button type="submit" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button>
       </form>
+
       <hr />
-      <button onClick={handleSignOut}>Sign out</button>
+
+      <button onClick={handleSignOut}>
+        Sign out
+      </button>
     </div>
   );
 };
