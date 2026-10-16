@@ -22,12 +22,8 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
     try {
       const res = await signIn(email, password, role);
       console.log("Signed in", res);
-      // Stop loading before navigating or notifying parent to avoid updating
-      // state on an unmounted component if the parent unmounts this form.
       setLoading(false);
-      // persist chosen role locally for later features
       try { localStorage.setItem('role', role); } catch {}
-      // Notify parent and navigate if requested, include role
       onLogin?.({ email: res.user?.email, role });
       onSuccess?.();
       alert("Signed in");
@@ -49,12 +45,12 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
       {error && <div style={{ color: "red" }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          <label htmlFor="signin-email">Email</label>
+          <input id="signin-email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <label htmlFor="signin-password">Password</label>
+          <input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
       <div style={{ marginTop: 8 }}>
         <label style={{ display: 'block', marginBottom: 6 }}>Account type</label>

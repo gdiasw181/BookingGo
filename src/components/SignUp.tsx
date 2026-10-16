@@ -34,16 +34,16 @@ const SignUp: React.FC = () => {
       <h3>Sign Up</h3>
       {error && <div style={{ color: "red" }}>{error}</div>}
       <div>
-        <label>Display name</label>
-        <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+        <label htmlFor="displayName">Display name</label>
+        <input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
       </div>
       <div>
-        <label>Email</label>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} />
+        <label htmlFor="email">Email</label>
+        <input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div>
-        <label>Password</label>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <label htmlFor="password">Password</label>
+        <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
       <div style={{ marginTop: 8 }}>
         <label style={{ display: 'block', marginBottom: 6 }}>Account type</label>
