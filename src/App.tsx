@@ -17,6 +17,12 @@ type Page =
 function App() {
   const [page, setPage] = useState<Page>('home')
   const [lastBookingId, setLastBookingId] = useState<string | null>(null)
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
+
+  function openBooking(staffId: string | null = null) {
+    setSelectedStaffId(staffId)
+    setPage('booking')
+  }
   
   
  function handleLogin(
@@ -106,7 +112,7 @@ function App() {
           Academic Staff
         </button>
 
-        <button onClick={() => setPage('booking')}>
+        <button onClick={() => openBooking()}>
           Book
         </button>
 
@@ -117,57 +123,91 @@ function App() {
 
       {/* Home Page */}
       {page === 'home' && (
-        <section
-          style={{
-            maxWidth: 1100,
-            margin: '0 auto',
-            padding: '50px 30px',
-          }}
-        >
-          <h1
-            style={{
-              color: '#111111',
-              fontSize: 40,
-              marginBottom: 6,
-            }}
-          >
-            BookingGo
-          </h1>
+        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '34px 30px 60px', textAlign: 'left' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderTop: '6px solid #f58220',
+            borderRadius: 8,
+            padding: '38px 36px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+          }}>
+            <p style={{
+              fontWeight: 700, color: '#d5670b', textTransform: 'uppercase',
+              letterSpacing: '1.5px', fontSize: 13, marginBottom: 12,
+            }}>
+              Academic support made simpler
+            </p>
+            <h1 style={{ color: '#111111', fontSize: 38, lineHeight: 1.2, margin: '0 0 10px' }}>
+              Book your next academic meeting
+            </h1>
+            <p style={{ color: '#555555', lineHeight: 1.6, fontSize: 16, maxWidth: 740 }}>
+              Find lecturers, tutors, teaching assistants and academic mentors.
+              Request a meeting and manage your appointments in one place.
+            </p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
+              <button
+                type="button"
+                onClick={() => setPage('staff')}
+                style={{
+                  backgroundColor: '#f58220', color: '#111111', border: 0, borderRadius: 5,
+                  padding: '12px 18px', fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                Find Academic Staff
+              </button>
+              <button
+                type="button"
+                onClick={() => openBooking()}
+                style={{
+                  backgroundColor: 'white', color: '#111111', border: '1px solid #111111',
+                  borderRadius: 5, padding: '12px 18px', fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                Request a Meeting
+              </button>
+            </div>
+          </div>
 
-          <h2
-            style={{
-              color: '#555555',
-              marginTop: 0,
-            }}
-          >
-            Academic Meeting Booking System
-          </h2>
+          <h2 style={{ margin: '34px 0 16px', color: '#111111', fontSize: 23 }}>Quick links</h2>
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(235px, 1fr))', gap: 16,
+          }}>
+            {[
+              { title: 'Academic Staff', description: 'Search staff by name, role or department.', go: () => setPage('staff') },
+              { title: 'Book a Meeting', description: 'Choose staff, a date and a meeting time.', go: () => openBooking() },
+              { title: 'My Bookings', description: 'View requests and cancel pending bookings.', go: () => setPage('mybookings') },
+            ].map((item) => (
+              <button
+                type="button"
+                key={item.title}
+                onClick={item.go}
+                style={{
+                  display: 'block', textAlign: 'left', padding: 22, cursor: 'pointer',
+                  border: '1px solid #ddd8d0', borderRadius: 8,
+                  backgroundColor: 'white', color: '#111111',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <strong style={{ display: 'block', fontSize: 18, marginBottom: 9 }}>{item.title} →</strong>
+                <span style={{ display: 'block', fontSize: 14, color: '#555555', lineHeight: 1.5 }}>{item.description}</span>
+              </button>
+            ))}
+          </div>
 
-          <p
-            style={{
-              color: '#555555',
-              maxWidth: 900,
-              lineHeight: 1.6,
-              margin: '0 auto',
-            }}
-          >
-            Book and manage academic meetings with lecturers,
-            tutors, TAs, and academic mentors.
-          </p>
-
-          <button
-            onClick={() => setPage('staff')}
-            style={{
-              marginTop: 18,
-              backgroundColor: '#f58220',
-              color: 'white',
-              padding: '10px 14px',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            Find Academic Staff
-          </button>
+          <div style={{
+            backgroundColor: '#fff7ed', borderLeft: '4px solid #f58220',
+            borderRadius: 5, padding: '20px 24px', marginTop: 28,
+          }}>
+            <h2 style={{ color: '#111111', margin: '0 0 10px', fontSize: 21 }}>How it works</h2>
+            <p style={{ color: '#555555', lineHeight: 1.7 }}>
+              1. Find an academic staff member. &nbsp; 2. Select a meeting date and time. &nbsp;
+              3. View or cancel your request in My Bookings.
+            </p>
+            <p style={{ color: '#777777', marginTop: 10, fontSize: 13 }}>
+              BookingGo is a student project prototype using sample staff information.
+              Live AUT schedules are not connected.
+            </p>
+          </div>
         </section>
       )}
 
@@ -190,12 +230,12 @@ function App() {
 
       {/* Academic Staff */}
       {page === 'staff' && (
-        <StaffProfiles />
+        <StaffProfiles onBookStaff={(staffId) => openBooking(staffId)} />
       )}
 
       {/* Real Booking Form */}
       {page === 'booking' && (
-        <Booking onBooked={handleBookingSuccess} />
+        <Booking key={selectedStaffId ?? 'manual'} initialStaffId={selectedStaffId ?? ''} onBooked={handleBookingSuccess} />
       )}
 
       {/* Booking Confirmation */}
