@@ -2,7 +2,7 @@
 import { useState } from 'react'
 
 type Staff = {
-  id: number
+  id: string
   name: string
   role: string
   department: string
@@ -12,7 +12,7 @@ type Staff = {
 
 const staffData: Staff[] = [
   {
-    id: 1,
+    id: 'staff001',
     name: 'Dr Alex Smith',
     role: 'Lecturer',
     department: 'Software Development',
@@ -20,7 +20,7 @@ const staffData: Staff[] = [
     email: 'alex.smith@example.com',
   },
   {
-    id: 2,
+    id: 'staff002',
     name: 'Maya Chen',
     role: 'Tutor',
     department: 'Computer Science',
@@ -28,7 +28,7 @@ const staffData: Staff[] = [
     email: 'maya.chen@example.com',
   },
   {
-    id: 3,
+    id: 'staff003',
     name: 'Jordan Lee',
     role: 'TA',
     department: 'Programming',
@@ -36,7 +36,7 @@ const staffData: Staff[] = [
     email: 'jordan.lee@example.com',
   },
   {
-    id: 4,
+    id: 'staff004',
     name: 'Sam Patel',
     role: 'Academic Mentor',
     department: 'Information Technology',
@@ -45,8 +45,13 @@ const staffData: Staff[] = [
   },
 ]
 
-function StaffProfiles() {
+type Props = {
+  onBookStaff?: (staffId: string) => void
+}
+
+function StaffProfiles({ onBookStaff }: Props) {
   const [search, setSearch] = useState('')
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
   const [role, setRole] = useState('All')
   const [department, setDepartment] = useState('All')
 
@@ -64,6 +69,8 @@ function StaffProfiles() {
 
     return matchesSearch && matchesRole && matchesDepartment
   })
+
+  const selectedStaff = staffData.find((staff) => staff.id === selectedStaffId)
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '45px 30px', fontFamily: 'Arial, sans-serif' }}>
@@ -247,7 +254,7 @@ function StaffProfiles() {
               marginTop: 22,
               flexWrap: 'wrap',
             }}>
-              <button style={{
+              <button type="button" onClick={() => setSelectedStaffId(staff.id)} style={{
                 padding: '12px 18px',
                 backgroundColor: 'white',
                 color: '#111111',
@@ -258,7 +265,7 @@ function StaffProfiles() {
                 VIEW PROFILE
               </button>
 
-              <button style={{
+              <button type="button" onClick={() => onBookStaff?.(staff.id)} style={{
                 padding: '12px 18px',
                 backgroundColor: '#f58220',
                 color: '#111111',
@@ -272,6 +279,73 @@ function StaffProfiles() {
           </div>
         ))}
       </div>
+
+      {selectedStaff && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedStaffId(null)
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="staff-profile-title"
+            style={{
+              width: '100%',
+              maxWidth: 480,
+              boxSizing: 'border-box',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              backgroundColor: 'white',
+              borderTop: '6px solid #f58220',
+              borderRadius: 8,
+              padding: 28,
+              textAlign: 'left',
+              color: '#111111',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 16 }}>
+              <h2 id="staff-profile-title" style={{ margin: 0, color: '#111111' }}>{selectedStaff.name}</h2>
+              <button type="button" aria-label="Close profile" onClick={() => setSelectedStaffId(null)}
+                style={{ border: '1px solid #999', background: 'white', padding: '6px 12px', cursor: 'pointer' }}>
+                Close
+              </button>
+            </div>
+            <p style={{ color: '#f58220', fontWeight: 700, marginTop: 8 }}>{selectedStaff.role}</p>
+            <p style={{ marginTop: 18 }}><strong>Department:</strong> {selectedStaff.department}</p>
+            <p style={{ marginTop: 10 }}><strong>Office Hours:</strong> {selectedStaff.officeHours}</p>
+            <p style={{ marginTop: 10 }}><strong>Email:</strong> {selectedStaff.email}</p>
+            <p style={{ marginTop: 18, fontSize: 13, color: '#555555' }}>
+              Sample staff information for the BookingGo prototype. Live staff availability is not connected.
+            </p>
+            <button type="button" onClick={() => {
+              setSelectedStaffId(null)
+              onBookStaff?.(selectedStaff.id)
+            }} style={{
+              backgroundColor: '#f58220',
+              color: '#111111',
+              border: 0,
+              borderRadius: 6,
+              marginTop: 20,
+              padding: '12px 18px',
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}>
+              Book a Meeting
+            </button>
+          </section>
+        </div>
+      )}
 
       {filteredStaff.length === 0 && (
         <div style={{
