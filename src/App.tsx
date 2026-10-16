@@ -17,6 +17,18 @@ type Page =
 function App() {
   const [page, setPage] = useState<Page>('home')
   const [lastBookingId, setLastBookingId] = useState<string | null>(null)
+  
+  
+ function handleLogin(
+  user: { email?: string; role?: string } | null
+  ) {
+  if (user?.role === 'staff') {
+    setPage('staff')
+    } else {
+    setPage('booking')
+    }
+  }
+
 
   function handleBookingSuccess(bookingId: string) {
     setLastBookingId(bookingId)
@@ -171,7 +183,7 @@ function App() {
             padding: '30px 20px',
           }}
         >
-          <SignIn onSuccess={() => setPage('staff')} />
+          <SignIn onLogin={handleLogin} />
           <SignUp />
         </div>
       )}
