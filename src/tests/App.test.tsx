@@ -29,6 +29,9 @@ expect(
   screen.getByRole('heading', { name: 'Academic Staff' })
 ).toBeInTheDocument()
 	expect(screen.getByText('Find support')).toBeInTheDocument()
+	fireEvent.click(screen.getAllByRole('button', { name: /^BOOK MEETING$/i })[0])
+	expect(screen.getByRole('heading', { name: 'Book a Meeting' })).toBeInTheDocument()
+	expect((screen.getByLabelText('Academic Staff') as HTMLSelectElement).value).toBe('staff001')
   })
 
   it('shows booking form when Book clicked', () => {
@@ -77,6 +80,10 @@ expect(
 	fireEvent.change(input, { target: { value: 'Maya' } })
 	expect(screen.queryByText('Dr Alex Smith')).not.toBeInTheDocument()
 	expect(screen.getByText('Maya Chen')).toBeInTheDocument()
+	fireEvent.click(screen.getByRole('button', { name: /^VIEW PROFILE$/i }))
+	expect(screen.getByRole('dialog', { name: 'Maya Chen' })).toBeInTheDocument()
+	fireEvent.click(screen.getByRole('button', { name: /Close profile/i }))
+	expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('StaffProfiles role and department selectors filter results', () => {

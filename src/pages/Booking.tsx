@@ -7,6 +7,7 @@ import { validateBookingRequest } from '../utils/bookingValidation'
 
 type BookingProps = {
   onBooked?: (bookingId: string) => void
+  initialStaffId?: string
 }
 
 // Temporary staff data for the prototype.
@@ -32,8 +33,8 @@ function formatLocalDate(value: Date): string {
   return `${year}-${month}-${day}`
 }
 
-function Booking({ onBooked }: BookingProps) {
-  const [staffId, setStaffId] = useState('')
+function Booking({ onBooked, initialStaffId = '' }: BookingProps) {
+  const [staffId, setStaffId] = useState(initialStaffId)
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [reason, setReason] = useState('')
