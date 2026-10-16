@@ -4,11 +4,12 @@ import SignIn from './components/SignIn'
 import { useState } from 'react'
 function App() {
   const [page, setPage] = useState('home')
-  const [user, setUser] = useState<{ email?: string } | null>(null)
+  const [user, setUser] = useState<{ email?: string; role?: string } | null>(null)
 
-  function handleLogin(u: { email: string }) {
+  function handleLogin(u: { email?: string; role?: string } | null) {
     setUser(u)
-    setPage('booking')
+    if (u?.role === 'staff') setPage('staff')
+    else setPage('booking')
   }
 
   function handleCancel() {
@@ -83,7 +84,7 @@ function App() {
 
       {page === 'login' && (
         <div style={{ display: 'flex', gap: 24, maxWidth: 900, margin: '0 auto', padding: '30px 0' }}>
-          <SignIn onSuccess={() => setPage('staff')} />
+          <SignIn onLogin={handleLogin} />
           <SignUp />
         </div>
       )}

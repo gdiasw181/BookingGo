@@ -5,6 +5,7 @@ const SignUp: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<'student' | 'staff'>('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,11 +14,14 @@ const SignUp: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      await signUp(email, password, displayName);
+      await signUp(email, password, displayName, role);
+      // remember the chosen role locally for later features
+      try { localStorage.setItem('role', role); } catch {}
       alert("Account created. Check email verification if configured.");
       setEmail("");
       setPassword("");
       setDisplayName("");
+      setRole('student');
     } catch (err: any) {
       setError(err.message || "Failed to create account");
     } finally {
@@ -40,6 +44,15 @@ const SignUp: React.FC = () => {
       <div>
         <label>Password</label>
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      </div>
+      <div style={{ marginTop: 8 }}>
+        <label style={{ display: 'block', marginBottom: 6 }}>Account type</label>
+        <label style={{ marginRight: 12 }}>
+          <input type="radio" name="role" value="student" checked={role === 'student'} onChange={() => setRole('student')} /> Student
+        </label>
+        <label>
+          <input type="radio" name="role" value="staff" checked={role === 'staff'} onChange={() => setRole('staff')} /> Academic staff
+        </label>
       </div>
       <button type="submit" disabled={loading}>
         {loading ? "Creating..." : "Create account"}
