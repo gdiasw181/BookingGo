@@ -90,7 +90,7 @@ function App() {
       )}
 
       {page === 'staff' && (
-        <StaffProfiles />
+        <StaffProfiles user={user ?? undefined} />
       )}
 
       {page === 'booking' && (

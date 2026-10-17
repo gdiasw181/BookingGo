@@ -1,8 +1,10 @@
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { db } from '../firebase'
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore'
 
 type Staff = {
-  id: number
+  id: string | number
   name: string
   role: string
   department: string
@@ -45,12 +47,15 @@ const staffData: Staff[] = [
   },
 ]
 
-function StaffProfiles() {
+function StaffProfiles({ user }: { user?: { email?: string; role?: string } }) {
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('All')
   const [department, setDepartment] = useState('All')
 
-  const filteredStaff = staffData.filter((staff) => {
+  // Keep an internal list so newly added staff appear immediately
+  const [staffList, setStaffList] = useState<Staff[]>(() => staffData.slice())
+
+  const filteredStaff = staffList.filter((staff) => {
     const query = search.trim().toLowerCase()
 
     const matchesSearch =
@@ -64,6 +69,74 @@ function StaffProfiles() {
 
     return matchesSearch && matchesRole && matchesDepartment
   })
+
+  // Form state for adding a new staff profile (only visible to signed-in staff)
+  const [newName, setNewName] = useState('')
+  const [newRole, setNewRole] = useState('Lecturer')
+  const [newDept, setNewDept] = useState('Software Development')
+  const [newHours, setNewHours] = useState('')
+  const [message, setMessage] = useState<string | null>(null)
+
+  async function handleAddStaff(e: any) {
+    e.preventDefault()
+    setMessage(null)
+    const email = user?.email ?? ''
+    if (!email) {
+      setMessage('No email available from account')
+      return
+    }
+    // Prevent duplicates by email
+    if (staffList.some((s) => s.email.toLowerCase() === email.toLowerCase())) {
+      setMessage('A profile for this account already exists')
+      return
+    }
+
+    const added: Omit<Staff, 'id'> = {
+      name: newName || email.split('@')[0],
+      role: newRole,
+      department: newDept,
+      officeHours: newHours || 'TBA',
+      email,
+    }
+
+    // Persist to Firestore
+    try {
+      setMessage('Saving...')
+      const col = collection(db, 'staffProfiles')
+      const docRef = await addDoc(col, { ...added, createdAt: serverTimestamp() })
+      setMessage('Profile added')
+      // reset form
+      setNewName('')
+      setNewRole('Lecturer')
+      setNewDept('Software Development')
+      setNewHours('')
+    } catch (err: any) {
+      console.error('Failed to add profile', err)
+      setMessage('Failed to save profile')
+    }
+  }
+
+  useEffect(() => {
+    // Listen to staffProfiles collection and merge with static staffData
+    try {
+      const col = collection(db, 'staffProfiles')
+      const q = query(col, orderBy('createdAt', 'desc'))
+      const unsub = onSnapshot(q, (snap) => {
+        const persisted: Staff[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))
+        // Combine persisted with static defaults, avoiding duplicates by email
+        const combined = [
+          ...persisted,
+          ...staffData.filter((s) => !persisted.some((p) => p.email.toLowerCase() === s.email.toLowerCase())),
+        ]
+        setStaffList(combined)
+      })
+      return () => unsub()
+    } catch (e) {
+      // If Firestore not configured, silently keep static data
+      console.warn('Firestore unavailable, using local data')
+      setStaffList(staffData.slice())
+    }
+  }, [])
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '45px 30px', fontFamily: 'Arial, sans-serif' }}>
@@ -165,6 +238,41 @@ function StaffProfiles() {
           </select>
         </div>
       </div>
+
+      {/* If signed in as staff, show a form to add or update your profile */}
+      {user?.role === 'staff' && (
+        <div style={{ backgroundColor: 'white', padding: 24, marginBottom: 30, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+          <h3 style={{ marginTop: 0 }}>Add / Update Your Profile</h3>
+          {message && <div style={{ marginBottom: 12, color: message === 'Profile added' ? 'green' : 'red' }}>{message}</div>}
+          <form onSubmit={handleAddStaff}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block' }}>Name</label>
+                <input value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: '100%', padding: 8 }} />
+              </div>
+              <div>
+                <label style={{ display: 'block' }}>Role</label>
+                <input value={newRole} onChange={(e) => setNewRole(e.target.value)} style={{ width: '100%', padding: 8 }} />
+              </div>
+              <div>
+                <label style={{ display: 'block' }}>Department</label>
+                <input value={newDept} onChange={(e) => setNewDept(e.target.value)} style={{ width: '100%', padding: 8 }} />
+              </div>
+              <div>
+                <label style={{ display: 'block' }}>Office Hours</label>
+                <input value={newHours} onChange={(e) => setNewHours(e.target.value)} style={{ width: '100%', padding: 8 }} placeholder="e.g. Monday 10:00 - 12:00" />
+              </div>
+              <div>
+                <label style={{ display: 'block' }}>Email (from account)</label>
+                <input value={user?.email ?? ''} disabled style={{ width: '100%', padding: 8, background: '#f3f3f3' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                <button type="submit" style={{ backgroundColor: '#f58220', color: 'white', padding: '10px 14px', border: 'none' }}>Save profile</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
 
       <p style={{ fontWeight: 700, marginBottom: 18 }}>
         {filteredStaff.length} staff member
