@@ -24,7 +24,7 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
       console.log("Signed in", res);
       setLoading(false);
       try { localStorage.setItem('role', role); } catch {}
-      onLogin?.({ email: res.user?.email, role });
+      onLogin?.({ email: res.user?.email, role, uid: res.user?.uid });
       onSuccess?.();
       alert("Signed in");
       return;
