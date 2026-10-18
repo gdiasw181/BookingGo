@@ -1,4 +1,4 @@
-
+﻿
 import { useState } from 'react'
 import StaffProfiles from './pages/StaffProfiles'
 import SignUp from './components/SignUp'
@@ -17,11 +17,13 @@ type Page =
 function App() {
   const [page, setPage] = useState<Page>('home')
   const [lastBookingId, setLastBookingId] = useState<string | null>(null)
+  const [user, setUser] = useState<{ email?: string; role?: string; uid?: string } | null>(null)
   
   
  function handleLogin(
-  user: { email?: string; role?: string } | null
+  user: { email?: string; role?: string; uid?: string } | null
   ) {
+  setUser(user)
   if (user?.role === 'staff') {
     setPage('staff')
     } else {
@@ -190,7 +192,7 @@ function App() {
 
       {/* Academic Staff */}
       {page === 'staff' && (
-        <StaffProfiles />
+        <StaffProfiles user={user ?? undefined} />
       )}
 
       {/* Real Booking Form */}
@@ -279,3 +281,4 @@ function App() {
 }
 
 export default App
+

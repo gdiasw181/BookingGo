@@ -1,10 +1,9 @@
-
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { signIn, signOut } from "../services/auth";
 
 type Props = {
   onSuccess?: () => void;
-  onLogin?: (user: { email?: string; role?: string } | null) => void;
+  onLogin?: (user: { email?: string; role?: string; uid?: string } | null) => void;
 };
 
 const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
@@ -20,21 +19,13 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       const res = await signIn(email, password, role);
       console.log("Signed in", res);
-
       setLoading(false);
-      // persist chosen role locally for later features
       try { localStorage.setItem('role', role); } catch {}
-      // Notify parent and navigate if requested, include role
-      onLogin?.({
-      email: res.user?.email ?? undefined,
-      role,
-      });
+      onLogin?.({ email: res.user?.email ?? undefined, role, uid: res.user?.uid });
       onSuccess?.();
-
       alert("Signed in");
       return;
     } catch (err: any) {
@@ -51,29 +42,15 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
   return (
     <div style={{ maxWidth: 400 }}>
       <h3>Sign In</h3>
-
-      {error && (
-        <div style={{ color: "red" }}>
-          {error}
-        </div>
-      )}
-
+      {error && <div style={{ color: "red" }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email</label>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <label htmlFor="signin-email">Email</label>
+          <input id="signin-email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
-
         <div>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <label htmlFor="signin-password">Password</label>
+          <input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
       <div style={{ marginTop: 8 }}>
         <label style={{ display: 'block', marginBottom: 6 }}>Account type</label>
@@ -86,14 +63,11 @@ const SignIn: React.FC<Props> = ({ onSuccess, onLogin }) => {
       </div>
         <button type="submit" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button>
       </form>
-
       <hr />
-
-      <button onClick={handleSignOut}>
-        Sign out
-      </button>
+      <button onClick={handleSignOut}>Sign out</button>
     </div>
   );
 };
 
 export default SignIn;
+
