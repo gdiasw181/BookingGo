@@ -32,7 +32,7 @@ describe('SignIn component (local mocks)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Sign in/i }))
 
     await waitFor(() => expect(auth.signIn).toHaveBeenCalledWith('staff@autuni.ac.nz', 'StaffPass1!', 'staff'))
-    expect(onLogin).not.toHaveBeenCalled() // SignIn calls onLogin via prop; we didn't pass it here
+    await waitFor(() => expect(onLogin).toHaveBeenCalledWith(expect.objectContaining({ email: 'staff@autuni.ac.nz', role: 'staff' })))
   })
 
   it('role mismatch shows error', async () => {
