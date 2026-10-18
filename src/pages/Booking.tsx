@@ -1,7 +1,8 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { auth } from '../firebase'
+import { auth, db } from '../firebase'
+import { collection, onSnapshot } from 'firebase/firestore'
 import { createBooking } from '../services/bookingService'
 import { validateBookingRequest } from '../utils/bookingValidation'
 
@@ -11,7 +12,7 @@ type BookingProps = {
 
 // Temporary staff data for the prototype.
 // Replace with actual staff profiles later.
-const staffOptions = [
+const sampleStaffOptions = [
   { id: 'staff001', name: 'Dr Alex Smith' },
   { id: 'staff002', name: 'Maya Chen' },
   { id: 'staff003', name: 'Jordan Lee' },
@@ -34,6 +35,29 @@ function formatLocalDate(value: Date): string {
 
 function Booking({ onBooked }: BookingProps) {
   const [staffId, setStaffId] = useState('')
+  const [staffOptions, setStaffOptions] = useState(sampleStaffOptions)
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, 'staffProfiles'),
+      (snapshot) => {
+        const profiles = snapshot.docs.map((profileDoc) => ({
+          id: profileDoc.id,
+          name: String(profileDoc.data().name || 'Academic Staff'),
+        }))
+
+        setStaffOptions(
+          profiles.length > 0 ? profiles : sampleStaffOptions
+        )
+      },
+      (error) => {
+        console.error('Failed to load staff profiles', error)
+        setStaffOptions(sampleStaffOptions)
+      }
+    )
+
+    return () => unsubscribe()
+  }, [])
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [reason, setReason] = useState('')

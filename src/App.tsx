@@ -1,10 +1,11 @@
-﻿
+
 import { useState } from 'react'
 import StaffProfiles from './pages/StaffProfiles'
 import SignUp from './components/SignUp'
 import SignIn from './components/SignIn'
 import Booking from './pages/Booking'
 import MyBookings from './pages/MyBookings'
+import StaffBookings from './pages/StaffBookings'
 
 type Page =
   | 'home'
@@ -13,6 +14,7 @@ type Page =
   | 'booking'
   | 'confirmation'
   | 'mybookings'
+  | 'staffbookings'
 
 function App() {
   const [page, setPage] = useState<Page>('home')
@@ -112,6 +114,11 @@ function App() {
           Book
         </button>
 
+        {user?.role === 'staff' && (
+          <button onClick={() => setPage('staffbookings')}>
+            Staff Bookings
+          </button>
+        )}
         <button onClick={() => setPage('mybookings')}>
           My Bookings
         </button>
@@ -271,6 +278,8 @@ function App() {
           </div>
         </section>
       )}
+
+      {page === 'staffbookings' && <StaffBookings />}
 
       {/* Real Booking History */}
       {page === 'mybookings' && (

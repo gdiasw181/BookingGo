@@ -277,21 +277,86 @@ service cloud.firestore {
         && getAfter(newSlotPath).data.time == after.time;
     }
 
+    // Check that this staff account owns the requested profile
+    function isBookingStaff(staffId) {
+      return isAutUser()
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role == 'staff'
+        && exists(
+          /databases/$(database)/documents/staffProfiles/$(staffId)
+        )
+        && get(
+          /databases/$(database)/documents/staffProfiles/$(staffId)
+        ).data.email == request.auth.token.email;
+    }
+
+    // Staff may accept or reject their own pending bookings
+    function staffCanDecide(bookingId) {
+      let before = resource.data;
+      let slotId =
+        before.staffId + '_' + before.date + '_' + before.time;
+      let slotPath =
+        /databases/$(database)/documents/bookingSlots/$(slotId);
+
+      return isBookingStaff(before.staffId)
+        && before.status == 'pending'
+        && request.resource.data.diff(before)
+          .affectedKeys().hasOnly(['status'])
+        && exists(slotPath)
+        && get(slotPath).data.bookingId == bookingId
+        && (
+          request.resource.data.status == 'accepted'
+          || (
+            request.resource.data.status == 'rejected'
+            && !existsAfter(slotPath)
+          )
+        );
+    }
+
+    // Release a time slot only when assigned staff rejects booking
+    function staffCanReleaseRejectedSlot(slotId) {
+      let slot = resource.data;
+      let bookingPath =
+        /databases/$(database)/documents/bookings/$(slot.bookingId);
+
+      return isBookingStaff(slot.staffId)
+        && slotId == (
+          slot.staffId + '_' + slot.date + '_' + slot.time
+        )
+        && exists(bookingPath)
+        && get(bookingPath).data.staffId == slot.staffId
+        && get(bookingPath).data.date == slot.date
+        && get(bookingPath).data.time == slot.time
+        && get(bookingPath).data.status == 'pending'
+        && getAfter(bookingPath).data.status == 'rejected'
+        && getAfter(bookingPath).data
+          .diff(get(bookingPath).data)
+          .affectedKeys().hasOnly(['status']);
+    }
+
     // Booking records
     match /bookings/{bookingId} {
 
-      // Students can only read their own bookings
+      // Students see their own bookings; staff see assigned bookings
       allow get, list: if isAutUser()
-        && resource.data.studentId == request.auth.uid;
+        && (
+          resource.data.studentId == request.auth.uid
+          || isBookingStaff(resource.data.staffId)
+        );
 
       // Creating a booking requires a matching reserved slot
       allow create: if isAutUser()
         && validNewBooking(request.resource.data)
         && matchingSlot(bookingId, request.resource.data);
 
-      // Allow cancellation or valid rescheduling
+      // Student changes or staff accept/reject
       allow update: if canCancelBooking(bookingId)
-        || canRescheduleBooking(bookingId);
+        || canRescheduleBooking(bookingId)
+        || staffCanDecide(bookingId);
 
       // Keep booking history
       allow delete: if false;
@@ -338,7 +403,8 @@ service cloud.firestore {
       // Release a slot only during valid cancellation
       // or rescheduling
       allow delete: if canReleaseSlot(slotId)
-        || canReleaseRescheduledSlot(slotId);
+        || canReleaseRescheduledSlot(slotId)
+        || staffCanReleaseRejectedSlot(slotId);
     }
   }
 }
